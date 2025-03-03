@@ -28,22 +28,14 @@
           - bzip2
           - curl
           - php-imagick
+          - python3-pymysql
         state: present
-
-    - name: Secure MariaDB installation
-      community.mysql.mysql_user:
-        name: root
-        password: "rootpassword"
-        host: localhost
-        state: present
-      ignore_errors: true
-      register: mariadb_user_creation
-      failed_when: mariadb_user_creation.rc !=0
 
     - name: Create Nextcloud database
       community.mysql.mysql_db:
         name: "{{ nextcloud_db_name }}"
         state: present
+        login_unix_socket: /run/mysqld/mysqld.sock
 
     - name: Create Nextcloud database user
       community.mysql.mysql_user:
@@ -51,11 +43,13 @@
         password: "{{ nextcloud_db_password }}"
         priv: "{{ nextcloud_db_name }}.*:ALL"
         state: present
+        login_unix_socket: /run/mysqld/mysqld.sock
 
     - name: Download Nextcloud
-      asnible.builtin.get_url:
+      ansible.builtin.get_url:
         url: "{{ nextcloud_url }}"
         dest: /tmp/nextcloud.tar.bz2
+        mode: '0644'
 
     - name: Extract Nextcloud
       ansible.builtin.unarchive:
@@ -66,47 +60,53 @@
         group: "{{ web_user }}"
 
     - name: Set permissions
-      asnible.builtin.file:
-        path: "{{ nextcloud_root }}"
+      ansible.builtin.file:
+        path: "{{ item }}"
         state: directory
         owner: "{{ web_user }}"
         group: "{{ web_user }}"
         mode: "0755"
         recurse: true
+      loop:
+        - "{{ nextcloud_root }}"
+        - "{{ nextcloud_root }}/config"
 
     - name: Configure Nginx server block
-      asnible.builtin.template:
+      ansible.builtin.template:
         src: nextcloud.conf.j2
         dest: /etc/nginx/sites-available/nextcloud
+        mode: '0644'
       notify: Restart Nginx
 
     - name: Linking nextcloud sites
-      asnible.builtin.file:
+      ansible.builtin.file:
         src: /etc/nginx/sites-available/nextcloud
         dest: /etc/nginx/sites-enabled/nextcloud
         state: link
 
     - name: Remove default Nginx site
-      asnible.builtin.file:
+      ansible.builtin.file:
         path: /etc/nginx/sites-enabled/default
         state: absent
       notify: Restart Nginx
 
     - name: Restart PHP-FPM
-      asnible.builtin.service:
-        name: php-fpm
+      ansible.builtin.service:
+        name: php8.2-fpm
         state: restarted
 
     - name: Reload Nginx
-      asnible.builtin.service:
+      ansible.builtin.service:
         name: nginx
         state: reloaded
 
     - name: Run Nextcloud CLI installation
-      asnible.builtin.command: >
-        php {{ nextcloud_root }}/occ maintenance:install
+      ansible.builtin.command: >
+        sudo -u {{ web_user }} php {{ nextcloud_root }}/occ maintenance:install
         --database "mysql" --database-name "{{ nextcloud_db_name }}"
         --database-user "{{ nextcloud_db_user }}" --database-pass "{{ nextcloud_db_password }}"
         --admin-user "{{ nextcloud_admin_user }}" --admin-pass "{{ nextcloud_admin_password }}"
       args:
         chdir: "{{ nextcloud_root }}"
+      register: run_nextcloud
+      changed_when: run_nextcloud.rc != 0
