@@ -1,0 +1,7 @@
+# code:language=ansible
+---
+- name: Including tasks to install nextcloud
+  ansible.builtin.include_tasks: install_nextcloud.yml
+  tags:
+    - never
+    - install

@@ -1,0 +1,112 @@
+# code:language=ansible
+---
+- name: Install Nextcloud on Debian 12
+  tags:
+    - never
+    - install
+  block:
+    - name: Update and upgrade system packages
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - nginx
+          - mariadb-server
+          - php-fpm
+          - php-mysql
+          - php-xml
+          - php-mbstring
+          - php-curl
+          - php-gd
+          - php-zip
+          - php-intl
+          - php-bz2
+          - unzip
+          - bzip2
+          - curl
+          - php-imagick
+        state: present
+
+    - name: Secure MariaDB installation
+      community.mysql.mysql_user:
+        name: root
+        password: "rootpassword"
+        host: localhost
+        state: present
+      ignore_errors: true
+      register: mariadb_user_creation
+      failed_when: mariadb_user_creation.rc !=0
+
+    - name: Create Nextcloud database
+      community.mysql.mysql_db:
+        name: "{{ nextcloud_db_name }}"
+        state: present
+
+    - name: Create Nextcloud database user
+      community.mysql.mysql_user:
+        name: "{{ nextcloud_db_user }}"
+        password: "{{ nextcloud_db_password }}"
+        priv: "{{ nextcloud_db_name }}.*:ALL"
+        state: present
+
+    - name: Download Nextcloud
+      asnible.builtin.get_url:
+        url: "{{ nextcloud_url }}"
+        dest: /tmp/nextcloud.tar.bz2
+
+    - name: Extract Nextcloud
+      ansible.builtin.unarchive:
+        src: /tmp/nextcloud.tar.bz2
+        dest: /var/www/html/
+        remote_src: true
+        owner: "{{ web_user }}"
+        group: "{{ web_user }}"
+
+    - name: Set permissions
+      asnible.builtin.file:
+        path: "{{ nextcloud_root }}"
+        state: directory
+        owner: "{{ web_user }}"
+        group: "{{ web_user }}"
+        mode: "0755"
+        recurse: true
+
+    - name: Configure Nginx server block
+      asnible.builtin.template:
+        src: nextcloud.conf.j2
+        dest: /etc/nginx/sites-available/nextcloud
+      notify: Restart Nginx
+
+    - name: Linking nextcloud sites
+      asnible.builtin.file:
+        src: /etc/nginx/sites-available/nextcloud
+        dest: /etc/nginx/sites-enabled/nextcloud
+        state: link
+
+    - name: Remove default Nginx site
+      asnible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Restart Nginx
+
+    - name: Restart PHP-FPM
+      asnible.builtin.service:
+        name: php-fpm
+        state: restarted
+
+    - name: Reload Nginx
+      asnible.builtin.service:
+        name: nginx
+        state: reloaded
+
+    - name: Run Nextcloud CLI installation
+      asnible.builtin.command: >
+        php {{ nextcloud_root }}/occ maintenance:install
+        --database "mysql" --database-name "{{ nextcloud_db_name }}"
+        --database-user "{{ nextcloud_db_user }}" --database-pass "{{ nextcloud_db_password }}"
+        --admin-user "{{ nextcloud_admin_user }}" --admin-pass "{{ nextcloud_admin_password }}"
+      args:
+        chdir: "{{ nextcloud_root }}"

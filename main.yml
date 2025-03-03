@@ -1,0 +1,6 @@
+---
+- name: Installing SYS Ops Apps
+  hosts: nextcloud
+  gather_facts: true
+  roles:
+    - nextcloud
