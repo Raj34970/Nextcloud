@@ -29,6 +29,8 @@
           - curl
           - php-imagick
           - python3-pymysql
+          - sudo
+          - php-cli
         state: present
 
     - name: Create Nextcloud database
@@ -45,31 +47,43 @@
         state: present
         login_unix_socket: "{{ nextcloud_mysql_login_socket }}"
 
-    - name: Download Nextcloud
-      ansible.builtin.get_url:
-        url: "{{ nextcloud_url }}"
-        dest: /tmp/nextcloud.tar.bz2
-        mode: '0644'
-
-    - name: Extract Nextcloud
+    - name: Download and extract Nextcloud
       ansible.builtin.unarchive:
+<<<<<<< HEAD
         src: /tmp/nextcloud.tar.bz2
         dest: "{{ nextcloud_root }}"
+=======
+        src: "{{ nextcloud_url }}"
+        dest: "{{ nextcloud_default_path }}/nextcloud"
+        owner: "{{ nextcloud_web_user }}"
+        group: "{{ nextcloud_web_user }}"
+>>>>>>> f4ee647469a9deb1cda9e6eb7c001732e04cd96b
         remote_src: true
-        owner: "{{ web_user }}"
-        group: "{{ web_user }}"
+        mode: "0755"
+        extra_opts:
+          - --strip-components=1
+      when: nextcloud_url is defined
 
     - name: Set permissions
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
-        owner: "{{ web_user }}"
-        group: "{{ web_user }}"
+        owner: "{{ nextcloud_web_user }}"
+        group: "{{ nextcloud_web_user }}"
         mode: "0755"
         recurse: true
       loop:
         - "{{ nextcloud_root }}"
         - "{{ nextcloud_root }}/config"
+
+    - name: Ensure Nginx sites directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /etc/nginx/sites-available
+        - /etc/nginx/sites-enabled
 
     - name: Configure Nginx server block
       ansible.builtin.template:
@@ -78,11 +92,12 @@
         mode: '0644'
       notify: Restart Nginx
 
-    - name: Linking nextcloud sites
+    - name: Enable Nextcloud Nginx site
       ansible.builtin.file:
         src: "{{ nextcloud_nginx_sites_available }}nextcloud"
         dest: "{{ nextcloud_nginx_sites_enabled }}nextcloud"
         state: link
+        force: true
 
     - name: Remove default Nginx site
       ansible.builtin.file:
@@ -95,14 +110,14 @@
         name: php8.2-fpm
         state: restarted
 
-    - name: Reload Nginx
-      ansible.builtin.service:
-        name: nginx
-        state: reloaded
+    - name: Verify Nextcloud installation
+      ansible.builtin.stat:
+        path: "{{ nextcloud_root }}/occ"
+      register: nextcloud_occ
 
     - name: Run Nextcloud CLI installation
       ansible.builtin.command: >
-        sudo -u {{ web_user }} php {{ nextcloud_root }}/occ maintenance:install
+        sudo -u {{ nextcloud_web_user }} php {{ nextcloud_root }}/occ maintenance:install
         --database "mysql" --database-name "{{ nextcloud_db_name }}"
         --database-user "{{ nextcloud_db_user }}" --database-pass "{{ nextcloud_db_password }}"
         --admin-user "{{ nextcloud_admin_user }}" --admin-pass "{{ nextcloud_admin_password }}"
@@ -110,3 +125,4 @@
         chdir: "{{ nextcloud_root }}"
       register: run_nextcloud
       changed_when: run_nextcloud.rc != 0
+      when: nextcloud_occ.stat.exists

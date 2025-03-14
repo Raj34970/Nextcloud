@@ -2,6 +2,7 @@
 
 # Set container name
 MARIADB_CONTAINER="mariadb"
+NEXTCLOUD_PASSWORD='Nextcloud2024@%'
 
 # Set backup destination on the VM
 BACKUP_DIR="/backup/nextcloud"
@@ -14,6 +15,6 @@ echo "🔹 Starting Nextcloud SQL backup at $TIMESTAMP..."
 
 # Backup MariaDB database inside the container
 echo "🗄️ Dumping Nextcloud database..."
-sudo docker exec "$MARIADB_CONTAINER" mysqldump -u nextcloud --password='Nextcloud2024@%' nextcloud > "$BACKUP_DIR/nextcloud-db_$TIMESTAMP.sql"
+sudo docker exec -e MYSQL_PWD="$PASSWORD" "$MARIADB_CONTAINER" mysqldump -u nextcloud nextcloud > "$BACKUP_DIR/nextcloud-db_$TIMESTAMP.sql"
 
 echo "✅ Backup completed! File saved to: $BACKUP_DIR/nextcloud-db_$TIMESTAMP.sql"

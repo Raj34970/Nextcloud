@@ -1,12 +1,11 @@
 server {
     listen 80;
     server_name localhost;
-
     root {{ nextcloud_root }};
     index index.php index.html index.htm;
 
     location / {
-        try_files $uri $uri/ /index.php;
+        try_files $uri $uri/ /index.php$is_args$args;
     }
 
     location ~ ^/(?:build|tests|config|lib|3rdparty|templates|data)/ {
