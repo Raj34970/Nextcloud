@@ -1,4 +1,8 @@
 ---
 nextcloud_url: "https://download.nextcloud.com/server/releases/latest.tar.bz2"
-nextcloud_root: /var/www/html/nextcloud
-web_user: www-data
+nextcloud_default_path: /var/www/html/
+nextcloud_root: "{{ nextcloud_default_path }}nextcloud"
+nextcloud_web_user: www-data
+
+nextcloud_nginx_sites_available: /etc/nginx/sites-available/
+nextcloud_nginx_sites_enable: /etc/nginx/sites-enabled/
