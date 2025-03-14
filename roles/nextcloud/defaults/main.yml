@@ -2,3 +2,6 @@
 nextcloud_url: "https://download.nextcloud.com/server/releases/latest.tar.bz2"
 nextcloud_root: /var/www/html/nextcloud
 web_user: www-data
+nextcloud_nginx_sites_enabled: /etc/nginx/sites-enabled/
+nextcloud_nginx_sites_available: /etc/nginx/sites-available/
+nextcloud_mysql_login_socket: /run/mysqld/mysqld.sock

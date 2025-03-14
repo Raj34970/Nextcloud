@@ -35,7 +35,7 @@
       community.mysql.mysql_db:
         name: "{{ nextcloud_db_name }}"
         state: present
-        login_unix_socket: /run/mysqld/mysqld.sock
+        login_unix_socket: "{{ nextcloud_mysql_login_socket }}"
 
     - name: Create Nextcloud database user
       community.mysql.mysql_user:
@@ -43,7 +43,7 @@
         password: "{{ nextcloud_db_password }}"
         priv: "{{ nextcloud_db_name }}.*:ALL"
         state: present
-        login_unix_socket: /run/mysqld/mysqld.sock
+        login_unix_socket: "{{ nextcloud_mysql_login_socket }}"
 
     - name: Download Nextcloud
       ansible.builtin.get_url:
@@ -54,7 +54,7 @@
     - name: Extract Nextcloud
       ansible.builtin.unarchive:
         src: /tmp/nextcloud.tar.bz2
-        dest: /var/www/html/
+        dest: "{{ nextcloud_root }}"
         remote_src: true
         owner: "{{ web_user }}"
         group: "{{ web_user }}"
@@ -74,19 +74,19 @@
     - name: Configure Nginx server block
       ansible.builtin.template:
         src: nextcloud.conf.j2
-        dest: /etc/nginx/sites-available/nextcloud
+        dest: "{{ nextcloud_nginx_sites_available }}nextcloud"
         mode: '0644'
       notify: Restart Nginx
 
     - name: Linking nextcloud sites
       ansible.builtin.file:
-        src: /etc/nginx/sites-available/nextcloud
-        dest: /etc/nginx/sites-enabled/nextcloud
+        src: "{{ nextcloud_nginx_sites_available }}nextcloud"
+        dest: "{{ nextcloud_nginx_sites_enabled }}nextcloud"
         state: link
 
     - name: Remove default Nginx site
       ansible.builtin.file:
-        path: /etc/nginx/sites-enabled/default
+        path: "{{ nextcloud_nginx_sites_enabled }}default"
         state: absent
       notify: Restart Nginx
 
