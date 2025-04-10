@@ -1,10 +1,6 @@
 #!/bin/bash
 
-# Set container names
-NEXTCLOUD_CONTAINER="nextcloud"
-
-# Set backup destination on the VM
-BACKUP_DIR="/backup/nextcloud"
+# setting the vars
 TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
 
 # Create backup directory if not exists

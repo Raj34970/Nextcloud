@@ -1,11 +1,6 @@
 #!/bin/bash
 
-# Set container name
-MARIADB_CONTAINER="mariadb"
-NEXTCLOUD_PASSWORD='Nextcloud2024@%'
-
-# Set backup destination on the VM
-BACKUP_DIR="/backup/nextcloud"
+# setting the vars
 TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
 
 # Create backup directory if not exists
