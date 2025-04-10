@@ -49,19 +49,12 @@
 
     - name: Download and extract Nextcloud
       ansible.builtin.unarchive:
-<<<<<<< HEAD
-        src: /tmp/nextcloud.tar.bz2
-        dest: "{{ nextcloud_root }}"
-=======
         src: "{{ nextcloud_url }}"
         dest: "{{ nextcloud_default_path }}/nextcloud"
         owner: "{{ nextcloud_web_user }}"
         group: "{{ nextcloud_web_user }}"
->>>>>>> f4ee647469a9deb1cda9e6eb7c001732e04cd96b
         remote_src: true
         mode: "0755"
-        extra_opts:
-          - --strip-components=1
       when: nextcloud_url is defined
 
     - name: Set permissions
