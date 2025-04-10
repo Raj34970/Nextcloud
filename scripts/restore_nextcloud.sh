@@ -68,13 +68,13 @@ restore_data() {
 # Restore database and create user if not exists
 restore_database() {
     echo "=== Dropping Database ==="
-    docker exec -i $DB_CONTAINER mysql -u root -p"$DB_PASSWORD" -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;" || { echo "Failed to recreate database"; exit 1; }
+    sudo docker exec -i $DB_CONTAINER mysql -u root -p"$DB_PASSWORD" -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;" || { echo "Failed to recreate database"; exit 1; }
     echo "=== Creating user if not exists ==="
-    docker exec -i $DB_CONTAINER mysql -u root -p"$DB_PASSWORD" -e "CREATE USER IF NOT EXISTS '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';" || { echo "Failed to create database user"; exit 1; }
+    sudo docker exec -i $DB_CONTAINER mysql -u root -p"$DB_PASSWORD" -e "CREATE USER IF NOT EXISTS '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';" || { echo "Failed to create database user"; exit 1; }
     echo "=== Granting privillages to the newly created user ==="
-    docker exec -i $DB_CONTAINER mysql -u root -p"$DB_PASSWORD" -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%'; FLUSH PRIVILEGES;" || { echo "Failed to grant privileges"; exit 1; }
+    sudo docker exec -i $DB_CONTAINER mysql -u root -p"$DB_PASSWORD" -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%'; FLUSH PRIVILEGES;" || { echo "Failed to grant privileges"; exit 1; }
     echo "=== Restoring the DB with the backup file ==="
-    docker exec -i $DB_CONTAINER mysql -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < "$BACKUP_DIR/$DB_BACKUP" || { echo "Failed to restore database"; exit 1; }
+    sudo docker exec -i $DB_CONTAINER mysql -u root -p"$DB_PASSWORD" -D "$DB_NAME" < "$BACKUP_DIR/$DB_BACKUP" || { echo "Failed to restore database"; exit 1; }
     echo "=== Database Restored Successfully ==="
     echo "=== Restarting nextcloud DB and contianer ==="
     sudo docker stop $DB_CONTAINER && sudo docker stop $NEXTCLOUD_CONTAINER || { echo "Failed to stop Nextcloud and mariadb container"; exit 1; }
