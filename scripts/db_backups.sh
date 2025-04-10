@@ -17,6 +17,6 @@ echo "🔹 Starting Nextcloud SQL backup at $TIMESTAMP..."
 
 # Backup MariaDB database inside the container
 echo "🗄️ Dumping Nextcloud database..."
-sudo docker exec -e MYSQL_PWD="$PASSWORD" "$MARIADB_CONTAINER" mysqldump -u nextcloud nextcloud > "$BACKUP_DIR/nextcloud-db_$TIMESTAMP.sql"
+sudo docker exec -e MYSQL_PWD="$PASSWORD" "$DB_CONTAINER" mysqldump -u nextcloud nextcloud > "$BACKUP_DIR/nextcloud-db_$TIMESTAMP.sql"
 
 echo "✅ Backup completed! File saved to: $BACKUP_DIR/nextcloud-db_$TIMESTAMP.sql"
