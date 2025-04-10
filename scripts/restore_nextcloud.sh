@@ -61,8 +61,8 @@ restore_data() {
     echo "=== Massive task !! -- Extracting the files in the $DATA_DIR (This might take some time)==="
     sudo tar -xzf $DATA_BACKUP -C $DATA_DIR || { echo "Failed to restore data"; exit 1; }
     echo "=== Setting Correct Permissions ==="
-    sudo chown -R www-data:www-data $NEXTCLOUD_DIR || { echo "Failed to set ownership"; exit 1; }
-    sudo chmod -R 750 $NEXTCLOUD_DIR || { echo "Failed to set permissions"; exit 1; }
+    sudo chown www-data:www-data $NEXTCLOUD_DIR || { echo "Failed to set ownership"; exit 1; }
+    sudo chmod 750 $NEXTCLOUD_DIR || { echo "Failed to set permissions"; exit 1; }
 }
 
 # Restore database and create user if not exists
