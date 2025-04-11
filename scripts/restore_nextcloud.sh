@@ -65,7 +65,6 @@ restore_data() {
     sudo chmod 750 $NEXTCLOUD_DIR || { echo "Failed to set permissions"; exit 1; }
 }
 
-
 # Restore database and create user if not exists
 restore_database() {
     echo "=== Dropping Database ==="
