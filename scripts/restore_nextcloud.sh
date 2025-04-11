@@ -84,8 +84,15 @@ restore_database() {
 # Run Nextcloud file scan
 upgrade_repair() {
     echo "=== Upgrading nextcloud & performing a repair==="
-    sudo docker exec -u www-data php $NEXTCLOUD_DIR/_data/occ upgrade || { echo "Uprgrade failed"; exit 1; }
-    sudo docker exec -u www-data php $NEXTCLOUD_DIR/_data/occ maintenance:repair || { echo "Repair failed"; exit 1; }
+    sudo docker exec -u www-data $NEXTCLOUD_CONTAINER php $NEXTCLOUD_OCC_PATH upgrade || { echo "Uprgrade failed"; exit 1; }
+    sudo docker exec -u www-data $NEXTCLOUD_CONTAINER php $NEXTCLOUD_OCC_PATH maintenance:repair || { echo "Repair failed"; exit 1; }
+}
+
+
+
+cleanup(){
+    echo "Cealing up the backup dir"
+    rm -Rf $BACKUP_DIR/*
 }
 
 # ===== Main execution =====
@@ -94,7 +101,8 @@ upgrade_repair() {
 # find_backup_files
 # restore_config
 # restore_data
-restore_database
+# restore_database
 upgrade_repair
+cleanup
 
 echo "=== Restore Completed Successfully for $BACKUP_DATE! ==="
