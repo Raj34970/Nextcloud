@@ -47,7 +47,7 @@ find_backup_files() {
 # Restore Nextcloud configuration
 restore_config() {
     echo "=== Restoring Config ==="
-    sudo tar -xzf $CONFIG_BACKUP -C $DATA_DIR || { echo "Failed to restore config"; exit 1; }
+    sudo tar -xzf $CONFIG_BACKUP -C $NEXTCLOUD_APP_DIR || { echo "Failed to restore config"; exit 1; }
 }
 
 # Restore Nextcloud data
@@ -59,9 +59,9 @@ restore_data() {
     echo "=== Setting Correct Permissions to the $DATA_DIR==="
     sudo chown www-data:www-data $DATA_DIR || { echo "Failed to set ownership to the data dir"; exit 1; }
     echo "=== Massive task !! -- Extracting the files in the $DATA_DIR (This might take some time)==="
-    sudo tar -xzf $DATA_BACKUP -C $DATA_DIR || { echo "Failed to restore data"; exit 1; }
+    sudo tar -xzf $DATA_BACKUP -C $NEXTCLOUD_APP_DIR || { echo "Failed to restore data"; exit 1; }
     echo "=== Setting Correct Permissions ==="
-    sudo chown www-data:www-data $NEXTCLOUD_DIR || { echo "Failed to set ownership"; exit 1; }
+    sudo chown www-data:www-data $NEXTCLOUD_APP_DIR || { echo "Failed to set ownership"; exit 1; }
     sudo chmod 750 $NEXTCLOUD_DIR || { echo "Failed to set permissions"; exit 1; }
 }
 
