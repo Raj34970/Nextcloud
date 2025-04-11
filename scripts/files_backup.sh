@@ -26,8 +26,8 @@ sudo docker exec "$NEXTCLOUD_CONTAINER" tar czf /tmp/nextcloud-config.tar.gz -C 
 sudo docker cp "$NEXTCLOUD_CONTAINER":/tmp/nextcloud-config.tar.gz "$BACKUP_DIR/nextcloud-config_$TIMESTAMP.tar.gz"
 
 # Cleanup temporary files inside containers
-echo "🧹 Cleaning up temporary files..."
-sudo docker exec "$NEXTCLOUD_CONTAINER" rm /nextcloud-data.tar.gz /nextcloud-config.tar.gz
+echo "🧹 Cleaning up temporary files from the container..."
+sudo docker exec "$NEXTCLOUD_CONTAINER" rm /tmp/nextcloud-data.tar.gz /tmp/nextcloud-config.tar.gz
 
 echo "✅ Backup completed! Files are stored in: $BACKUP_DIR"
 
