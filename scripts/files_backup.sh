@@ -1,11 +1,14 @@
 #!/bin/bash
 
-# Set container names
-NEXTCLOUD_CONTAINER="nextcloud"
-
-# Set backup destination on the VM
-BACKUP_DIR="/backup/nextcloud"
+# setting the vars
 TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+RETURN_CODE=0
+
+# loading the .env file
+if [ ! -f "$(dirname "$0")/.env" ]; then RETURN_CODE=1; critical "No environment file, use the sample file"; fi
+set -a
+source "$(dirname "$0")/.env"
+set +a
 
 # Create backup directory if not exists
 sudo mkdir -p "$BACKUP_DIR"
@@ -23,8 +26,8 @@ sudo docker exec "$NEXTCLOUD_CONTAINER" tar czf /tmp/nextcloud-config.tar.gz -C 
 sudo docker cp "$NEXTCLOUD_CONTAINER":/tmp/nextcloud-config.tar.gz "$BACKUP_DIR/nextcloud-config_$TIMESTAMP.tar.gz"
 
 # Cleanup temporary files inside containers
-echo "🧹 Cleaning up temporary files..."
-sudo docker exec "$NEXTCLOUD_CONTAINER" rm /nextcloud-data.tar.gz /nextcloud-config.tar.gz
+echo "🧹 Cleaning up temporary files from the container..."
+sudo docker exec "$NEXTCLOUD_CONTAINER" rm /tmp/nextcloud-data.tar.gz /tmp/nextcloud-config.tar.gz
 
 echo "✅ Backup completed! Files are stored in: $BACKUP_DIR"
 

@@ -1,0 +1,24 @@
+# code:language=ansible
+---
+- name: Deploying scripts for backup/restore
+  tags:
+    - never
+    - deploy_scripts
+  block:
+    - name: Pushing the files regarding backup, restore, log
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/home/{{ sudo_user }}/"
+        owner: "{{ sudo_user }}"
+        group: "{{ sudo_user }}"
+        mode: "0755"
+      with_fileglob:
+        - "scripts/*"
+
+    - name: Templating the .env file
+      ansible.builtin.template:
+        src: "ENV.j2"
+        dest: "/home/{{ sudo_user }}/.env"
+        owner: "{{ sudo_user }}"
+        group: "{{ sudo_user }}"
+        mode: "0755"
