@@ -21,4 +21,4 @@
         dest: "/home/{{ sudo_user }}/.env"
         owner: "{{ sudo_user }}"
         group: "{{ sudo_user }}"
-        mode: "0755"
+        mode: "0644"
