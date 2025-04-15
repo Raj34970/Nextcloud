@@ -12,19 +12,6 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
 
-  # pgdb:
-  #   container_name: postgres
-  #   image: postgres
-  #   restart: always
-  #   environment:
-  #     - POSTGRES_DB=nextcloud
-  #     - POSTGRES_USER=nextcloud
-  #     - POSTGRES_PASSWORD=Nextcloud2024@%
-  #   volumes:
-  #     - pgdb:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
-
   redis:
     container_name: redis
     image: redis:alpine
@@ -39,10 +26,8 @@ services:
     depends_on:
       - redis
       - db
-      - pgdb
     volumes:
       - nextcloud:/var/www/html
-      - ./nextcloud/custom-php/php.ini:/usr/local/etc/php/conf.d/99-custom.ini
     environment:
       - MYSQL_PASSWORD=Nextcloud2024@%
       - MYSQL_DATABASE=nextcloud
@@ -56,4 +41,3 @@ services:
 volumes:
   nextcloud:
   db:
-  pgdb:
