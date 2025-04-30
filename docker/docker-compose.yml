@@ -27,7 +27,7 @@ services:
       - redis
       - db
     volumes:
-      - nextcloud:/var/www/html
+      - /mnt/data/nextcloud:/var/www/html
     environment:
       - MYSQL_PASSWORD=Nextcloud2024@%
       - MYSQL_DATABASE=nextcloud

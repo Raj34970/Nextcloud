@@ -11,7 +11,7 @@ Documentation for the collection.
 
 ``` shell
     # To restore the data
-    sudo docker exec -i mariadb mysql -u root -p"Nextcloud2024@%" -d nextcloud < backups/nextcloud-db_2025-04-08_22-43-12.sql
+    sudo docker exec -i mariadb mysql -u root -p"Nextcloud2024@%" nextcloud < backups/nextcloud-db_2025-04-08_22-43-12.sql
 
     # increase php memeroy size
     nano /usr/local/etc/php/php.ini-production

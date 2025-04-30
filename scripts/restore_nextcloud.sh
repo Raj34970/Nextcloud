@@ -70,9 +70,9 @@ download_backups() {
     
     # Get the data, config and DB
     info "Transfering files from remote server"
-    ${lftp_cmd} -e "get ${RESOLVED_CONFIG} -o ${RESTORE_DIR}/${RESTORE_CONFIG}; bye"
-    ${lftp_cmd} -e "get ${RESOLVED_FILE} -o ${RESTORE_DIR}/${RESTORE_FILE}; bye"
-    ${lftp_cmd} -e "get ${RESOLVED_DB} -o ${RESTORE_DIR}/${RESTORE_DB}; bye"
+    ${lftp_cmd} -e "get ${RESOLVED_CONFIG} -o ${RESTORE_DIR}; bye"
+    ${lftp_cmd} -e "get ${RESOLVED_FILE} -o ${RESTORE_DIR}; bye"
+    ${lftp_cmd} -e "get ${RESOLVED_DB} -o ${RESTORE_DIR}; bye"
     RETURN_CODE=$?
     test ${RETURN_CODE} -eq 0 || critical "Can not download the files from remote server"
 
@@ -93,7 +93,7 @@ find_backup_files() {
 # Restore Nextcloud configuration
 restore_config() {
     echo "=== Restoring Config ==="
-    sudo tar -xzf ${CONFIG_BACKUP} -C ${NEXTCLOUD_APP_DIR} || { echo "Failed to restore config"; exit 1; }
+    sudo tar -xzf ${CONFIG_BACKUP} -C ${NEXTCLOUD_DIR} || { echo "Failed to restore config"; exit 1; }
 }
 
 # Restore Nextcloud data
@@ -105,9 +105,9 @@ restore_data() {
     echo "=== Setting Correct Permissions to the $DATA_DIR==="
     sudo chown www-data:www-data $DATA_DIR || { echo "Failed to set ownership to the data dir"; exit 1; }
     echo "=== Massive task !! -- Extracting the files in the $DATA_DIR (This might take some time)==="
-    sudo tar -xzf $DATA_BACKUP -C $NEXTCLOUD_APP_DIR || { echo "Failed to restore data"; exit 1; }
+    sudo tar -xzf $DATA_BACKUP -C $NEXTCLOUD_DIR || { echo "Failed to restore data"; exit 1; }
     echo "=== Setting Correct Permissions ==="
-    sudo chown www-data:www-data $NEXTCLOUD_APP_DIR || { echo "Failed to set ownership"; exit 1; }
+    sudo chown www-data:www-data $NEXTCLOUD_DIR || { echo "Failed to set ownership"; exit 1; }
     sudo chmod 750 $NEXTCLOUD_DIR || { echo "Failed to set permissions"; exit 1; }
 }
 
@@ -146,12 +146,14 @@ cleanup(){
 # ===== Main execution =====
 main() {
     set_env
-    # setup_restore_dir
-    # check_backup_sftp
+    setup_restore_dir
+    check_backup_sftp
     # download_backups
+
     find_backup_files
-    # restore_config
-    # restore_data
+    
+    restore_config
+    restore_data
     restore_database
     upgrade_repair
     cleanup
