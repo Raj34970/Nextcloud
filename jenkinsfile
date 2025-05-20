@@ -1,0 +1,47 @@
+// for backup/restore and cleanup 
+
+pipeline {
+    agent none
+    stages {
+        stage('DB_backup') {
+            agent { label 'nextcloud-home' }
+            steps {
+                wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'gnome-terminal']) {
+                    sh '/home/jenkins/Nextcloud/db_backups.sh'
+                }
+            }
+        }
+        stage('Files_backup') {
+            agent { label 'nextcloud-home' }
+            steps {
+                wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'gnome-terminal']) {
+                    sh '/home/jenkins/Nextcloud/files_backup.sh'
+                }
+            }
+        }
+        stage('Sending_to_SFTP') {
+            agent { label 'nextcloud-home' }
+            steps {
+                wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'gnome-terminal']) {
+                    sh '/home/jenkins/Nextcloud/send_sftp.sh'
+                }
+            }
+        }
+        stage('Container_VM_cleanup') {
+            agent { label 'nextcloud-home' }
+            steps {
+                wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'gnome-terminal']) {
+                    sh '/home/jenkins/Nextcloud/cleanup.sh'
+                }
+            }
+        }
+        stage('SFTP_cleanup') {
+            agent { label 'sftp-home' }
+            steps {
+                wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'gnome-terminal']) {
+                    sh 'sudo /home/jenkins/scripts/remove_nextcloud_backups.sh'
+                }
+            }
+        }
+    }
+}
