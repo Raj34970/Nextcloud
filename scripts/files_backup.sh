@@ -17,17 +17,17 @@ echo "🔹 Starting Nextcloud files backup at $TIMESTAMP..."
 
 # Backup Nextcloud data
 echo "📂 Backing up Nextcloud data..."
-sudo docker exec "$NEXTCLOUD_CONTAINER" tar czf /tmp/nextcloud-data.tar.gz -C /var/www/html data
-sudo docker cp "$NEXTCLOUD_CONTAINER":/tmp/nextcloud-data.tar.gz "$BACKUP_DIR/nextcloud-data_$TIMESTAMP.tar.gz"
+sudo docker exec "$NEXTCLOUD_CONTAINER" tar czf "$BACKUP_DIR"/nextcloud-data.tar.gz -C /var/www/html data
+sudo docker cp "$NEXTCLOUD_CONTAINER":"$BACKUP_DIR"/nextcloud-data.tar.gz "$BACKUP_DIR/nextcloud-data_$TIMESTAMP.tar.gz"
 
 # Backup Nextcloud config & apps
 echo "⚙️ Backing up Nextcloud config & apps..."
-sudo docker exec "$NEXTCLOUD_CONTAINER" tar czf /tmp/nextcloud-config.tar.gz -C /var/www/html config apps
-sudo docker cp "$NEXTCLOUD_CONTAINER":/tmp/nextcloud-config.tar.gz "$BACKUP_DIR/nextcloud-config_$TIMESTAMP.tar.gz"
+sudo docker exec "$NEXTCLOUD_CONTAINER" tar czf "$BACKUP_DIR"/nextcloud-config.tar.gz -C /var/www/html config apps
+sudo docker cp "$NEXTCLOUD_CONTAINER":"$BACKUP_DIR"/nextcloud-config.tar.gz "$BACKUP_DIR/nextcloud-config_$TIMESTAMP.tar.gz"
 
 # Cleanup temporary files inside containers
 echo "🧹 Cleaning up temporary files from the container..."
-sudo docker exec "$NEXTCLOUD_CONTAINER" rm /tmp/nextcloud-data.tar.gz /tmp/nextcloud-config.tar.gz
+sudo docker exec "$NEXTCLOUD_CONTAINER" rm "$BACKUP_DIR"/nextcloud-data.tar.gz "$BACKUP_DIR"/nextcloud-config.tar.gz
 
 echo "✅ Backup completed! Files are stored in: $BACKUP_DIR"
 
