@@ -28,6 +28,7 @@ services:
       - db
     volumes:
       - /mnt/data/nextcloud:/var/www/html
+      - /mnt/data/backups:/mnt/data/backups
     environment:
       - MYSQL_PASSWORD=Nextcloud2024@%
       - MYSQL_DATABASE=nextcloud
