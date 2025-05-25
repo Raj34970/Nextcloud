@@ -8,7 +8,7 @@
     - name: Pushing the files regarding backup, restore, log
       ansible.builtin.copy:
         src: "{{ item }}"
-        dest: "/home/{{ sudo_user }}/"
+        dest: "/home/{{ sudo_user }}/Nextcloud"
         owner: "{{ sudo_user }}"
         group: "{{ sudo_user }}"
         mode: "0755"
@@ -18,7 +18,7 @@
     - name: Templating the .env file
       ansible.builtin.template:
         src: "ENV.j2"
-        dest: "/home/{{ sudo_user }}/.env"
+        dest: "/home/{{ sudo_user }}/Nextcloud/.env"
         owner: "{{ sudo_user }}"
         group: "{{ sudo_user }}"
         mode: "0644"
