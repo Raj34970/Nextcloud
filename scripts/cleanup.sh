@@ -9,4 +9,4 @@ source "$(dirname "$0")/.env"
 set +a
 
 echo "Cleaning up the container backup from $BACKUP_DIR"
-sudo docker exec rm -rf "$NEXTCLOUD_CONTAINER":"$BACKUP_DIR"/*
+sudo docker exec "$NEXTCLOUD_CONTAINER" rm -rf "$NEXTCLOUD_CONTAINER":"$BACKUP_DIR"/*
