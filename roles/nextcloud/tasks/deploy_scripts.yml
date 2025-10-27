@@ -5,10 +5,18 @@
     - never
     - deploy_scripts
   block:
+    - name: Make the required folders
+      ansible.builtin.file:
+        path: "/home/{{ sudo_user }}/Nextcloud"
+        mode: '0644'
+        owner: "{{ sudo_user }}"
+        group: "{{ sudo_user }}"
+        state: directory
+
     - name: Pushing the files regarding backup, restore, log
       ansible.builtin.copy:
         src: "{{ item }}"
-        dest: "/home/{{ sudo_user }}/Nextcloud"
+        dest: "/home/{{ sudo_user }}/Nextcloud/"
         owner: "{{ sudo_user }}"
         group: "{{ sudo_user }}"
         mode: "0755"
