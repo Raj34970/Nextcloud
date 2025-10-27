@@ -1,9 +1,20 @@
-// for backup/restore and cleanup 
+// for backup and cleanup 
 
 pipeline {
+
     agent none
+
+    parameters {
+        booleanParam(name: 'backup_db', defaultValue: true, description: 'Run backup_db')
+        booleanParam(name: 'backup_files', defaultValue: true, description: 'Run backup_files')
+        booleanParam(name: 'send_sftp', defaultValue: true, description: 'Run send_sftp')
+        booleanParam(name: 'cleanup', defaultValue: true, description: 'Run cleanup')
+        booleanParam(name: 'remove_nextcloud_backups', defaultValue: true, description: 'Run remove_nextcloud_backups')
+    }
+    
     stages {
         stage('DB_backup') {
+            when { expression { return params.backup_db } }
             agent { label 'nextcloud-home' }
             steps {
                 wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'gnome-terminal']) {
@@ -12,6 +23,7 @@ pipeline {
             }
         }
         stage('Files_backup') {
+            when { expression { return params.backup_files } }
             agent { label 'nextcloud-home' }
             steps {
                 wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'gnome-terminal']) {
@@ -20,6 +32,7 @@ pipeline {
             }
         }
         stage('Sending_to_SFTP') {
+            when { expression { return params.send_sftp } }
             agent { label 'nextcloud-home' }
             steps {
                 wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'gnome-terminal']) {
@@ -28,6 +41,7 @@ pipeline {
             }
         }
         stage('Container_VM_cleanup') {
+            when { expression { return params.cleanup } }
             agent { label 'nextcloud-home' }
             steps {
                 wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'gnome-terminal']) {
@@ -36,7 +50,8 @@ pipeline {
             }
         }
         stage('SFTP_cleanup') {
-            agent { label 'sftp-home' }
+            when { expression { return params.remove_nextcloud_backups } }
+            agent { label 'SFTP' }
             steps {
                 wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'gnome-terminal']) {
                     sh 'sudo /home/jenkins/scripts/remove_nextcloud_backups.sh'
