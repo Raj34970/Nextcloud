@@ -1,41 +1,35 @@
 #!/bin/bash
-set -euo pipefail
 
+# Must be run with sudo
 BACKUP_DIR="/root/nextcloud_backups"
-RETENTION_DAYS=20
 
-info() {
-  echo -e "\033[1;34m[INFO]\033[0m $*"
-}
-
-critical() {
-  echo -e "\033[1;31m[CRITICAL]\033[0m $*" >&2
-}
-
-# Ensure running as root (for SFTP backup dir access)
 if [[ $EUID -ne 0 ]]; then
-  critical "This script must be run with sudo or as root."
-  exit 1
+   echo "This script must be run as root (via sudo)." >&2
+   exit 1
 fi
 
-# Check directory exists
-if [ ! -d "$BACKUP_DIR" ]; then
-  critical "Backup directory not found: $BACKUP_DIR"
-  exit 1
-fi
+cd "$BACKUP_DIR" || {
+    echo "Failed to access backup directory: $BACKUP_DIR" >&2
+    exit 1
+}
 
-info "🧹 Cleaning up backups older than $RETENTION_DAYS days in $BACKUP_DIR"
+# Extract unique backup dates (YYYY-MM-DD)
+dates=$(ls nextcloud-* 2>/dev/null | \
+    grep -oP '\d{4}-\d{2}-\d{2}' | \
+    sort | uniq)
 
-# List old files before deleting
-OLD_FILES=$(find "$BACKUP_DIR" -type f -mtime +"$RETENTION_DAYS" -name "nextcloud-*" 2>/dev/null)
+# Get the latest date
+latest_date=$(echo "$dates" | tail -n 1)
 
-if [[ -z "$OLD_FILES" ]]; then
-  info "No backups older than $RETENTION_DAYS days found."
-else
-  echo "$OLD_FILES" | while read -r file; do
-    info "Deleting: $file"
-    rm -f "$file"
-  done
-fi
+echo "Latest backup date: $latest_date"
+echo "Deleting backups from older dates..."
 
-info "✅ Cleanup complete."
+# Delete files not from latest date
+for d in $dates; do
+    if [[ "$d" != "$latest_date" ]]; then
+        echo "Deleting files from date: $d"
+        rm -v nextcloud-*"$d"*
+    fi
+done
+
+echo "Cleanup complete."
